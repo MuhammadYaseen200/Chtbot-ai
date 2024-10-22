@@ -2,15 +2,16 @@ import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-# Load the pretrained model and tokenizer from Hugging Face
-model_name = "distilgpt2"
+# Load the DialoGPT-medium model and tokenizer from Hugging Face
+model_name = "microsoft/DialoGPT-medium"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
 # Function to generate a response from the model
 def generate_response(prompt):
-    inputs = tokenizer.encode(prompt, return_tensors="pt")
-    
+    # Encode the prompt into input tokens
+    inputs = tokenizer.encode(prompt + tokenizer.eos_token, return_tensors="pt")
+
     # Generate a response from the model
     outputs = model.generate(
         inputs, 
@@ -23,7 +24,9 @@ def generate_response(prompt):
         top_p=0.9
     )
     
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # Decode the output tokens and return the response
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response
 
 # Streamlit app layout
 def main():
@@ -36,7 +39,7 @@ def main():
 
     user_input = st.text_input("You: ", st.session_state.input)
 
-    # Generate response and display
+    # Generate and display the response if input is provided
     if user_input:
         response = generate_response(user_input)
         st.write(f"AI Chatbot: {response}")
@@ -47,4 +50,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
