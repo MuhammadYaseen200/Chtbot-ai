@@ -1,6 +1,4 @@
 import streamlit as st
-print(st.__version__)  # This should print the version of Streamlit installed.
-import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
@@ -55,3 +53,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
