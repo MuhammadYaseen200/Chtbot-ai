@@ -2,8 +2,8 @@ import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-# Load the pretrained model and tokenizer from Hugging Face (using distilGPT-2 as an example)
-model_name = "distilgpt2"  # A smaller and free version of GPT-2
+# Load the pretrained model and tokenizer from Hugging Face
+model_name = "distilgpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
@@ -16,33 +16,35 @@ def generate_response(prompt):
         inputs, 
         max_length=150, 
         pad_token_id=tokenizer.eos_token_id,
-        num_return_sequences=1,  # Generate 1 response
-        no_repeat_ngram_size=2,   # Prevent repetition
-        do_sample=True,           # Sampling to create varied responses
-        temperature=0.7,          # Control creativity (lower is more deterministic)
-        top_p=0.9                 # Control diversity (higher values create more diverse answers)
+        num_return_sequences=1,
+        no_repeat_ngram_size=2,
+        do_sample=True,
+        temperature=0.7,
+        top_p=0.9
     )
     
-    # Decode the generated tokens and return the response
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 # Streamlit app layout
 def main():
     st.title("AI Chatbot")
     st.write("Ask anything about Artificial Intelligence!")
-    
-    # Input box for user queries
-    user_input = st.text_input("You: ", "")
-    
+
+    # Input field managed by session_state
+    if 'input' not in st.session_state:
+        st.session_state.input = ""
+
+    user_input = st.text_input("You: ", st.session_state.input)
+
+    # Generate response and display
     if user_input:
-        # Generate and display the response
         response = generate_response(user_input)
         st.write(f"AI Chatbot: {response}")
     
-    # Clear chat button
+    # Button to clear chat
     if st.button("Clear Chat"):
-        st.experimental_rerun()
+        st.session_state.input = ""  # Clear input
 
 if __name__ == "__main__":
     main()
-  
+    
