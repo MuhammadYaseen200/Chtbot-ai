@@ -1,5 +1,10 @@
 import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+
+# Force the model to run on CPU
+device = torch.device("cpu")
+model.to(device)
 
 # Load pre-trained model and tokenizer
 model_name = "microsoft/DialoGPT-medium"
