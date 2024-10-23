@@ -1,56 +1,34 @@
 import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
-# Load the DialoGPT-medium model and tokenizer from Hugging Face
+# Load pre-trained model and tokenizer
 model_name = "microsoft/DialoGPT-medium"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
-# Function to generate a response from the model
-def generate_response(prompt):
-    # Encode the prompt into input tokens
-    inputs = tokenizer.encode(prompt + tokenizer.eos_token, return_tensors="pt")
+st.title("AI Chatbot")
+st.write("Ask anything about Artificial Intelligence!")
 
-    # Generate a response from the model
-    outputs = model.generate(
-        inputs, 
-        max_length=150, 
-        pad_token_id=tokenizer.eos_token_id,
-        num_return_sequences=1,
-        no_repeat_ngram_size=2,
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.9
-    )
-    
-    # Decode the output tokens and return the response
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return response
+# Keep track of conversation history
+if 'history' not in st.session_state:
+    st.session_state.history = []
 
-# Streamlit app layout
-def main():
-    st.title("AI Chatbot")
-    st.write("Ask anything about Artificial Intelligence!")
+# User input
+user_input = st.text_input("You: ", "")
 
-    # Input field managed by session_state
-    if 'input' not in st.session_state:
-        st.session_state.input = ""
-
-    user_input = st.text_input("You: ", st.session_state.input)
-
-    # Generate and display the response if input is provided
+if st.button("Send"):
     if user_input:
-        response = generate_response(user_input)
-        if response is not None:  # Check for a valid response
-            st.write(f"AI Chatbot: {response}")
-        else:
-            st.write("AI Chatbot: Sorry, I couldn't generate a response.")
-    
-    # Button to clear chat
-    if st.button("Clear Chat"):
-        st.session_state.input = ""  # Clear input
+        # Tokenize input and append conversation history
+        new_input_ids = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors='pt')
+        bot_input_ids = torch.cat([torch.tensor(st.session_state.history), new_input_ids], dim=-1) if st.session_state.history else new_input_ids
 
-if __name__ == "__main__":
-    main()
-    
+        # Generate a response
+        chat_history_ids = model.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
+
+        # Decode the response
+        bot_response = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+
+        # Display bot response and update conversation history
+        st.write(f"AI: {bot_response}")
+        st.session_state.history = chat_history_ids
+        
