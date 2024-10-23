@@ -2,4 +2,3 @@ torch
 transformers
 streamlit
 datasets
-pillow
