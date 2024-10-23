@@ -28,7 +28,7 @@ if st.button("Send"):
         bot_input_ids = torch.cat([torch.tensor(st.session_state.history), new_input_ids], dim=-1) if st.session_state.history else new_input_ids
 
         # Generate a response
-        chat_history_ids = model.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
+        chat_history_ids = model.generate(bot_input_ids.to(device), max_length=1000, pad_token_id=tokenizer.eos_token_id)
 
         # Decode the response
         bot_response = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
