@@ -1,5 +1,5 @@
-torch==
-transformers==
-streamlit==
---find-links https://download.lfd.uci.edu/pythonlibs/
-pillow==
+torch
+transformers
+streamlit
+datasets
+pillow
